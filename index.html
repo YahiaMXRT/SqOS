@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div os-interface>
+        <div toolbar>
+            
+            <div buttons>
+                <button open-startmenu><i class="fa-solid fa-window-maximize"></i> Square OS</button>
+                
+                <button open-settings><i class="fa-solid fa-cog"></i></button>
+                <button id="fullscreen-toggle"><i class="fa-solid fa-expand"></i></button>
+            </div>
+            <p style="color: white;">new session each time for extra security</p>
+            <p id="use" style="color: white;">dr</div> 
+            <div startmenu class="hidden">
+                <div>
+                    <div>
+                        <button id="calc">Calculator</button>
+                    </div>
+                    <div>
+                        <button id="notepad">Notepad</button>
+                    </div>
+                    <div>
+                        <button id="text-editor">Text Editor</button>
+                    </div>
+                    <div>
+                        <button id="terminal">Terminal</button>
+                    </div>
+                    <div>
+                        <button id="paint">Paint</button>
+                    </div>
+                    <div>
+                        <button id="explorer">File Explorer</button>
+                    </div>
+                </div> 
+            </div>
+            <div dock>
+                <div>
+                    <button id="calc2"><i class="fa-solid fa-calculator"></i></button>
+                </div>
+                <div>
+                    <button id="notepad2"><i class="fa-solid fa-note-sticky"></i></button>
+                </div>
+                <div>
+                    <button id="text-editor2"><i class="fa-solid fa-code"></i></button>
+                </div>
+                <div>
+                    <button id="terminal2"><i class="fa-solid fa-terminal"></i></button>
+                </div>
+                <div>
+                    <button id="paint2"><i class="fa-solid fa-brush"></i></button>
+                </div>
+                <div>
+                    <button id="explorer2"><i class="fa-regular fa-folder"></i></button>
+                </div>
+                <div>
+                    <button id="chat-launch"><i class="fa-solid fa-comments"></i></button>
+                </div>
+            </div>
+        </div>
+        <div window style="padding: 10px;">
+            <div class="titlebar" resizable="true">
+                <div class="title">
+                    <span>Window Title</span>
+                    <div class="buttons">
+                        <button close-window onclick="this.closest('[window]').remove()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button minimize-window onclick="
+                            const minWin = this.closest('[window]');
+                            const minContent = minWin.querySelector('[window-content]');
+                            const isMinimized = minWin.classList.contains('minimized');
+                            
+                            console.log('Minimize button clicked');
+                            console.log('Current minimized state:', isMinimized);
+                            console.log('Current display:', minContent.style.display);
+                            console.log('Current height:', minWin.style.height);
+                            
+                            if (isMinimized) {
+                                // Restore window
+                                console.log('Restoring window...');
+                                minContent.style.display = 'block';
+                                if (minWin.dataset.prevHeight) {
+                                    minWin.style.height = minWin.dataset.prevHeight;
+                                    console.log('Restored height to:', minWin.dataset.prevHeight);
+                                } else {
+                                    minWin.style.height = '300px'; // Default height if none saved
+                                }
+                                minWin.classList.remove('minimized');
+                            } else {
+                                // Minimize window
+                                console.log('Minimizing window...');
+                                minContent.style.display = 'none';
+                                minWin.dataset.prevHeight = minWin.style.height || '300px';
+                                minWin.style.height = '40px';
+                                minWin.classList.add('minimized');
+                                console.log('Saved height:', minWin.dataset.prevHeight);
+                            }
+                            
+                            console.log('New minimized state:', minWin.classList.contains('minimized'));
+                        ">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <button maximize-window onclick="
+                            const maxWin = this.closest('[window]');
+                            const maxContent = maxWin.querySelector('[window-content]');
+                            const isMaximized = maxWin.classList.contains('maximized');
+                            if (isMaximized) {
+                                // Restore window
+                                maxWin.style.width = maxWin.dataset.prevWidth || '400px';
+                                maxWin.style.height = maxWin.dataset.prevHeight || '300px';
+                                maxWin.style.left = maxWin.dataset.prevLeft || '50px';
+                                maxWin.style.top = maxWin.dataset.prevTop || '50px';
+                                maxWin.classList.remove('maximized');
+                                maxContent.style.resize = 'both';
+                            } else {
+                                // Maximize window
+                                maxWin.dataset.prevWidth = maxWin.style.width;
+                                maxWin.dataset.prevHeight = maxWin.style.height;
+                                maxWin.dataset.prevLeft = maxWin.style.left;
+                                maxWin.dataset.prevTop = maxWin.style.top;
+                                maxWin.style.width = '100vw';
+                                maxWin.style.height = 'calc(100vh - 35px)';
+                                maxWin.style.left = '0px';
+                                maxWin.style.top = '35px';
+                                maxWin.classList.add('maximized');
+                                maxContent.style.resize = 'none';
+                            }
+                        ">
+                            <i class="fa-solid fa-square"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div window-content>
+                Test
+            </div>
+        </div>
+
+    </div>
+    <!-- Firebase SDK -->
+    <!-- compat (namespaced) SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-database-compat.js"></script>
+
+    <!-- Your JS -->
+            
+    <script src="src/index.js"></script>
+</body>
+</html>
