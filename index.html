@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="src/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css" integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+    <div login><h1>Login</h1>
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" name="username" id="username" value="" /><br>
+        </div>
+        <button id="login">Login</button>
+    </div>
+    <div os-interface class="hidden">
+        <div toolbar>
+            
+            <div buttons>
+                <button open-startmenu><i class="fa-solid fa-window-maximize"></i> Square OS</button>
+                
+                <button open-settings><i class="fa-solid fa-cog"></i></button>
+                <button id="fullscreen-toggle"><i class="fa-solid fa-expand"></i></button>
+            </div>
+            <p style="color: white;">new session each time for extra security</p>
+            <p id="use" style="color: white;">dr</div> 
+            <div startmenu class="hidden">
+                <div>
+                    <div>
+                        <button id="calc">Calculator</button>
+                    </div>
+                    <div>
+                        <button id="notepad">Notepad</button>
+                    </div>
+                    <div>
+                        <button id="text-editor">Text Editor</button>
+                    </div>
+                    <div>
+                        <button id="terminal">Terminal</button>
+                    </div>
+                    <div>
+                        <button id="paint">Paint</button>
+                    </div>
+                    <div>
+                        <button id="explorer">File Explorer</button>
+                    </div>
+                </div> 
+            </div>
+            <div dock>
+                <div>
+                    <button id="calc2"><i class="fa-solid fa-calculator"></i></button>
+                </div>
+                <div>
+                    <button id="notepad2"><i class="fa-solid fa-note-sticky"></i></button>
+                </div>
+                <div>
+                    <button id="text-editor2"><i class="fa-solid fa-code"></i></button>
+                </div>
+                <div>
+                    <button id="terminal2"><i class="fa-solid fa-terminal"></i></button>
+                </div>
+                <div>
+                    <button id="paint2"><i class="fa-solid fa-brush"></i></button>
+                </div>
+                <div>
+                    <button id="explorer2"><i class="fa-regular fa-folder"></i></button>
+                </div>
+                <div>
+                    <button id="chat-launch"><i class="fa-solid fa-comments"></i></button>
+                </div>
+            </div>
+        </div>
+      
+
+    </div>
+    <!-- Firebase SDK -->
+    <!-- compat (namespaced) SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-database-compat.js"></script>
+
+    <!-- Your JS -->
+    <script src="src/login-page.js"></script>
+    <script src="src/index.js"></script>
+</body>
+</html>

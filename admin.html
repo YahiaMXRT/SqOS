@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Square Chat Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Firebase compat -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.1/firebase-database-compat.js"></script>
+  <style>
+    :root {
+      --bg:#1f1f24;
+      --card:#2b2b33;
+      --border:#444;
+      --radius:10px;
+      --accent:#00bcd4;
+      --text:#f1f1f1;
+      --muted:#888;
+      font-family: "Segoe UI", system-ui,-apple-system,sans-serif;
+    }
+    * {box-sizing:border-box;}
+    body {
+      margin:0;
+      background: var(--bg);
+      color: var(--text);
+      min-height:100vh;
+      padding:16px;
+    }
+    h1 {
+      margin:0 0 10px;
+      font-size:1.8rem;
+    }
+    .toolbar {
+      display:flex;
+      gap:10px;
+      justify-self: center;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:12px;
+    }
+    .btn {
+      background: var(--accent);
+      border:none;
+      padding:8px 14px;
+      border-radius:6px;
+      cursor:pointer;
+      color:#fff;
+      font-weight:600;
+      transition:filter .15s;
+    }
+    .btn:hover {filter:brightness(1.1);}
+    .input {
+      background: #222;
+      border:1px solid var(--border);
+      padding:6px 10px;
+      border-radius:6px;
+      color: var(--text);
+      outline:none;
+      flex:1;
+      min-width:150px;
+    }
+    .card {
+      background: var(--card);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      padding:14px;
+      margin-bottom:16px;
+      position:relative;
+      display: flex;
+      flex-direction: column;
+      gap:10px;
+    }
+    .flex {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+    .messages {
+      max-height: 600px;
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:8px;
+    }
+    .msg {
+      padding:10px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      display:flex;
+      gap:12px;
+      position:relative;
+    }
+    .msg:last-child {border-bottom:none;}
+    .meta {
+      flex:0 0 160px;
+      font-size:12px;
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      min-width:140px;
+    }
+    .body {
+      flex:1;
+      word-break:break-word;
+      position:relative;
+    }
+    .small {
+      font-size:11px;
+      color: var(--muted);
+    }
+    .delete {
+      background:transparent;
+      border:none;
+      color:#ff5f5f;
+      cursor:pointer;
+      font-weight:600;
+      position:absolute;
+      top:6px;
+      right:6px;
+    }
+    .badge {
+      background:#222;
+      padding:2px 6px;
+      border-radius:4px;
+      font-size:11px;
+      display:inline-block;
+      margin-right:4px;
+    }
+    .status {
+      margin-left:auto;
+      font-size:13px;
+    }
+    .hidden {display:none;}
+    .filter-row {
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .export-area {
+      background:#0f0f0f;
+      padding:8px;
+      border-radius:6px;
+      font-family:monospace;
+      max-height:200px;
+      overflow:auto;
+      margin-top:6px;
+    }
+    .note {
+      font-size:12px;
+      margin-top:4px;
+      color: #aaa;
+    }
+    div[os-interface] {
+    height: 100vh;
+    background-color: #333232;
+}
+
+div[toolbar] {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    background-color: black;
+    z-index: 1000;
+}
+
+div[buttons] button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+div[buttons] button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ccc;
+}
+
+div[buttons] {
+    display: flex;
+    gap: 5px;
+}
+
+.hidden {
+    height: 0.00000000000001px !important;
+    overflow: hidden;
+    margin: 0px !important;
+}
+
+[startmenu] {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    top: 35.2px;
+    height: 208.07px;
+    width: 200px;
+    margin: 5px;
+    background-color: #000000;
+    color: white;
+    border-right: 1px solid #333;
+    z-index: 999;
+}
+
+div[startmenu] button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+div[startmenu] button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+div[dock]{
+    position: fixed;
+    bottom: 35.2px; 
+    gap:15px;
+    background-color: #00000069;
+    justify-content: center; 
+    padding: 12px;
+    z-index: 1000;
+    display: flex; 
+    border-radius: 15px;
+    justify-self: center;
+}
+div[dock] button {
+    background-color: #00000020;
+    color: #ffffff;
+    padding: 12px;
+    border: none;
+    border-radius: 15px;
+    font-size: larger;
+}
+dialog[popup] {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: 300px;
+    max-width: 90%;
+    padding: 20px;
+    background: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 9999;
+    font-family: 'Segoe UI', sans-serif;
+    animation: popupFadeIn 0.2s ease-out;
+  }
+  
+  @keyframes popupFadeIn {
+    from { opacity: 0; transform: translate(-50%, -60%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+  }
+  
+  dialog[popup] h1 {
+    margin-top: 0;
+    font-size: 1.4em;
+    color: #333;
+  }
+  
+  dialog[popup] p {
+    color: #555;
+    margin-bottom: 20px;
+  }
+  
+  dialog[popup] button {
+    padding: 6px 12px;
+    border: none;
+    background: #0078d7;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  dialog[popup] button:hover {
+    background: #005fa3;
+  }
+  
+li {
+    background-color: #000000;
+    color: #ffffff;
+    padding: 5px;
+    margin: 2px;
+}
+li:hover {
+    transform: scale(1.1);
+}
+li:active {
+    color: gray;
+}
+ul {
+    list-style-type: none;
+}
+div[dock] i {
+    font-size: 50px;
+}
+div[dock] button:hover {
+    background-color: #00000020;
+    color: #ffffff;
+    padding: 12px;
+    transform: scale(1.3);
+    border: none;
+    font-size: larger;
+}
+* {
+    font-family: 'Courier New', Courier;
+}
+div[window] {
+    position: fixed;
+    top: 50px;
+    left: 50px;
+    border-radius: 15px;
+    width: 400px;
+    height: 300px;
+    resize: both;
+    overflow: hidden;
+    background-color: #ffffff;
+    border: 1px solid #000000;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 100;
+    transition: height 0.2s ease;
+}
+
+div[window].minimized {
+    height: 40px !important;
+    resize: none;
+}
+
+div[window].maximized {
+    resize: none !important;
+    z-index: 1000 !important;
+}
+
+.titlebar {
+    background-color: #000000;
+    color: white;
+    cursor: move;
+    user-select: none;
+    touch-action: none;
+    min-height: 44px;
+    /* 44px is a good minimum for touch targets */
+}
+
+.title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1px 15px;
+    background-color: #000000;
+    color: white;
+}
+.title span {
+    font-weight: bold;
+}
+
+.buttons {
+    display: flex;
+    gap: 2px;
+}
+
+.buttons button {
+    background-color: transparent;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background-color 0.2s;
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 1.2em;
+    border-radius: 6px;
+}
+textarea {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 98% !important;
+    max-height: 98% !important;
+    resize: none !important;
+    border: 5px solid blue;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.4;
+    padding: 10px;
+    margin: 0;
+    box-sizing: border-box;
+    background-color: #ffffff;
+    flex: 1;
+    display: block;
+}
+.buttons button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+[window] button[save-file], [window] input {
+    margin: 10px;
+    min-height: 40px;
+    min-width: 40px;
+    font-size: 1.1em;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.buttons button[close-window]:hover {
+    background-color: #e81123;
+}
+
+[window-content] {
+    padding: 0;
+    overflow: hidden;
+    height: 100%;
+    background-color: #ffffff;
+    transition: display 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
+* {
+    margin: 0;
+    box-sizing: border-box;
+    transition-duration: 200ms;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+input[filename], button[save-file] {
+    padding: 8px 12px;
+    font-size: 1.1em;
+    border-radius: 6px;
+    margin: 10px;
+    width: calc(100% - 40px);
+    box-sizing: border-box;
+}
+
+.terminal-container {
+    background: black;
+    color: lime;
+    font-family: monospace;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.terminal-output {
+    flex: 1;
+    overflow: auto;
+    padding: 10px;
+}
+.terminal-form {
+    display: flex;
+}
+.terminal-input {
+    flex: 1;
+    background: black;
+    color: lime;
+    border: none;
+    outline: none;
+    font-family: monospace;
+    font-size: 1em;
+    padding: 5px;
+}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="flex">
+      <div>
+        <h1>Square Chat Admin</h1>
+      </div>
+      <div class="status" id="admin-status">Not authenticated</div>
+    </div>
+    <div class="note">
+      This is a lightweight admin UI. It uses a hardcoded password prompt — replace with proper auth & tighten Firebase rules before public use.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar filter-row">
+      <button class="btn" id="btn-login">Admin Login</button>
+      <button class="btn" id="btn-refresh">Refresh Messages</button>
+      <input class="input" placeholder="Filter username" id="filter-user" />
+      <input class="input" placeholder="Search text" id="filter-text" />
+      <button class="btn" id="btn-clear-all" style="background:#d9534f;">Clear All</button>
+      <button class="btn" id="btn-export">Export JSON</button>
+    </div>
+    <div class="badge" id="message-count">Loading…</div>
+    <div class="messages" id="messages-container">
+      <!-- messages injected here -->
+    </div>
+    <div class="export-area hidden" id="export-json"></div>
+  </div>
+
+  <script>
+    // --- CONFIGURE ---
+    const ADMIN_PASSWORD = atob('c3F1YXJlYWRtaW4'); // change this before sharing
+    const MAX_LOAD = 1000000;
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPvjIGxy4NoeYNG4rR41DEjmmOAfV5ZhA",
+      authDomain: "sqchat-27a5c.firebaseapp.com",
+      projectId: "sqchat-27a5c",
+      storageBucket: "sqchat-27a5c.appspot.com",
+      messagingSenderId: "484644576966",
+      appId: "1:484644576966:web:429ec000d8c665d57381c7",
+      databaseURL: "https://sqchat-27a5c-default-rtdb.firebaseio.com"
+    };
+    document.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+
+      let dialog = document.querySelector('dialog[popup]');
+      if (!dialog) {
+          dialog = document.createElement('dialog');
+          dialog.setAttribute('popup', '');
+          dialog.innerHTML = `
+              <h1>Implementing settings...</h1>
+              <p>Feature not available</p>
+              <button onclick="this.closest('dialog').close()">close</button>
+          `;
+          document.querySelector('body').appendChild(dialog);
+      }
+
+      dialog.showModal();
+  }, false);
+
+    // init Firebase (compat)
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.database();
+
+    // State
+    let messagesCache = {}; // key -> message object
+    let authenticated = false;
+
+    // Elements
+    const statusEl = document.getElementById("admin-status");
+    const container = document.getElementById("messages-container");
+    const countEl = document.getElementById("message-count");
+    const filterUser = document.getElementById("filter-user");
+    const filterText = document.getElementById("filter-text");
+    const exportArea = document.getElementById("export-json");
+
+    function formatTime(ts) {
+      const d = new Date(ts || Date.now());
+      return d.toLocaleString(undefined, { hour12: false });
+    }
+
+    function renderMessages() {
+      container.innerHTML = "";
+      let list = Object.entries(messagesCache)
+        .map(([key, msg]) => ({ key, ...msg }))
+        .sort((a,b)=> (a.time||0) - (b.time||0));
+
+      // filters
+      const userF = filterUser.value.trim().toLowerCase();
+      const textF = filterText.value.trim().toLowerCase();
+      if (userF) list = list.filter(m => (m.user||"").toLowerCase().includes(userF));
+      if (textF) list = list.filter(m => (m.text||"").toLowerCase().includes(textF));
+
+      countEl.textContent = `Showing ${list.length} / ${Object.keys(messagesCache).length} messages`;
+
+      list.forEach(m => {
+        const msgEl = document.createElement("div");
+        msgEl.className = "msg";
+
+        const meta = document.createElement("div");
+        meta.className = "meta";
+        meta.innerHTML = `
+          <div><span class="badge">User:</span> ${escapeHTML(m.user||"Anon")}</div>
+          <div><span class="badge">Time:</span> ${escapeHTML(formatTime(m.time))}</div>
+          <div><span class="badge">Key:</span> ${escapeHTML(m.key)}</div>
+        `;
+
+        const body = document.createElement("div");
+        body.className = "body";
+        body.innerHTML = `
+          <div>${escapeHTML(m.text||"")}</div>
+        `;
+
+        const del = document.createElement("button");
+        del.className = "delete";
+        del.textContent = "×";
+        del.title = "Delete message";
+        del.onclick = () => {
+          if (!authenticated) return alert("Not authenticated");
+          if (!confirm("Delete this message?")) return;
+          db.ref("messages/" + m.key).remove().then(() => {
+            delete messagesCache[m.key];
+            renderMessages();
+          });
+        };
+
+        msgEl.appendChild(meta);
+        msgEl.appendChild(body);
+        msgEl.appendChild(del);
+        container.appendChild(msgEl);
+      });
+    }
+
+    function loadMessages() {
+      if (!authenticated) return;
+      container.innerHTML = "<div class='small'>Loading...</div>";
+      db.ref("messages").limitToLast(MAX_LOAD).once("value").then(snap => {
+        messagesCache = {};
+        snap.forEach(c => {
+          messagesCache[c.key] = c.val();
+        });
+        renderMessages();
+      }).catch(e => {
+        console.error(e);
+        container.innerHTML = "<div class='small'>Failed to load</div>";
+      });
+    }
+
+    document.getElementById("btn-login").addEventListener("click", () => {
+      const attempt = prompt("Admin password:");
+      if (attempt === ADMIN_PASSWORD) {
+        authenticated = true;
+        statusEl.textContent = "Authenticated as admin";
+        statusEl.style.color = "#0f0";
+        loadMessages();
+      } else {
+        alert("Wrong password");
+      }
+    });
+
+    document.getElementById("btn-refresh").addEventListener("click", loadMessages);
+    filterUser.addEventListener("input", renderMessages);
+    filterText.addEventListener("input", renderMessages);
+
+    document.getElementById("btn-clear-all").addEventListener("click", () => {
+      if (!authenticated) return alert("Not authenticated");
+      if (!confirm("DELETE ALL MESSAGES? This cannot be undone.")) return;
+      db.ref("messages").remove().then(() => {
+        messagesCache = {};
+        renderMessages();
+      });
+    });
+
+    document.getElementById("btn-export").addEventListener("click", () => {
+      const list = Object.entries(messagesCache).map(([key, msg]) => ({ key, ...msg }));
+      exportArea.classList.remove("hidden");
+      exportArea.textContent = JSON.stringify(list, null, 2);
+    });
+
+    // HTML escaping
+    function escapeHTML(s) {
+      return String(s || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    // initial: optional auto-login if you want, else wait for admin
+  </script>
+  <script>
+    document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+
+    let dialog = document.querySelector('dialog[popup]');
+    if (!dialog) {
+        dialog = document.createElement('dialog');
+        dialog.setAttribute('popup', '');
+        dialog.innerHTML = `
+            <h1>Implementing settings...</h1>
+            <p>Feature not available</p>
+            <button onclick="this.closest('dialog').close()">close</button>
+        `;
+        document.querySelector('div[os-interface]').appendChild(dialog);
+    }
+
+    dialog.showModal();
+}, false);
+
+document.addEventListener('DOMContentLoaded', () => {
+
+    // After it's inserted, wire up Firebase + chat logic scoped to that window
+    function openChatApp() {
+        createWindow('Square Chat', `
+          <div style="display:flex; flex-direction:column; height:100%;">
+            <div id="chat-box" style="flex:1; overflow-y:auto; margin-bottom:8px;"></div>
+            <div style="display:flex; gap:6px;">
+              <input id="chat-input" type="text" placeholder="Type a message..." style="flex:1; padding:6px; border-radius:6px; border:1px solid #444; background:#282828; color:#fff;" />
+              <button id="send-btn" style="padding:6px 12px; border:none; border-radius:6px; background:#00bcd4; color:#fff; cursor:pointer;">Send</button>
+            </div>
+          </div>
+        `);
+      
+        setTimeout(() => {
+          const newWin = document.querySelector('div[window]:last-child');
+          const chatBox = newWin.querySelector('#chat-box');
+          const input = newWin.querySelector('#chat-input');
+          const sendBtn = newWin.querySelector('#send-btn');
+          if (!chatBox || !input || !sendBtn) return;
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+          const db = firebase.database();
+          input.addEventListener("keydown", e => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              sendBtn.click();
+            }
+          });
+          
+          // avoid duplicate listeners if reopened
+          db.ref("messages").off();
+      
+          function postMessage() {
+            const text = input.value.trim();
+            if (!text) return;
+            db.ref("messages").push({
+              text,
+              time: Date.now(),
+              user: localStorage.getItem('user') || 'Anon'
+            });
+            input.value = '';
+          }
+      
+          sendBtn.addEventListener('click', postMessage);
+          input.addEventListener('keydown', (e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              postMessage();
+            }
+          });
+      
+          // Listen for new messages
+          db.ref("messages").limitToLast(100).on("child_added", snapshot => {
+            const msg = snapshot.val();
+            const msgEl = document.createElement('div');
+            msgEl.className = 'chat-msg';
+            msgEl.style.marginBottom = '6px';
+            msgEl.innerHTML = `<strong>${escapeHTML(msg.user || 'Anon')}:</strong> ${escapeHTML(msg.text)}`;
+            chatBox.appendChild(msgEl);
+            chatBox.scrollTop = chatBox.scrollHeight;
+          });
+        }, 0);
+      }
+      
+    document.getElementById('chat-launch')?.addEventListener('click', openChatApp);
+
+    localStorage.setItem('user', `user${Math.floor(Math.random() * 20) + 1}`)
+    const startMenuBtn = document.querySelector('button[open-startmenu]');
+    const startMenu = document.querySelector('div[startmenu]');
+    const username = localStorage.getItem('user');
+    document.querySelector('#use').innerHTML = username;
+    // Start menu functionality
+    startMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startMenu.classList.toggle('hidden');
+    });
+
+    // Fullscreen toggle button functionality
+    document.getElementById('fullscreen-toggle')?.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            document.exitFullscreen();
+        }
+    });
+
+    // Close start menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!startMenu.classList.contains('hidden') && !startMenu.contains(e.target) && e.target !== startMenuBtn) {
+            startMenu.classList.add('hidden');
+        }
+    });
+
+    // Initialize window functionality for all existing windows
+    initializeWindows();
+
+    // Start menu button functionality
+    document.getElementById('calc')?.addEventListener('click', () => {
+        createWindow('Calculator', 'Calculator content here...');
+    });
+
+    document.getElementById('notepad')?.addEventListener('click', () => {
+        createWindow('Notepad', '<button save-file>Save</button><input filename placeholder="Filename"></input><textarea placeholder="Start typing here..." style="width: 98%; height: 98%;"></textarea>');
+        // Wait for the window to be added to the DOM
+        setTimeout(() => {
+            const osInterface = document.querySelector('div[os-interface]');
+            const lastWindow = osInterface.querySelector('div[window]:last-child');
+            if (!lastWindow) return;
+            const saveBtn = lastWindow.querySelector('button[save-file]');
+            const filenameInput = lastWindow.querySelector('input[filename]');
+            const textarea = lastWindow.querySelector('textarea');
+            if (saveBtn && filenameInput && textarea) {
+                saveBtn.addEventListener('click', () => {
+                    const filename = filenameInput.value.trim() || 'untitled.txt';
+                    const content = textarea.value;
+                    const blob = new Blob([content], { type: 'text/plain' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(a.href);
+                    }, 100);
+                });
+            }
+        }, 0);
+    });
+    openChatApp();
+    document.getElementById('text-editor')?.addEventListener('click', () => {
+        createWindow('Text Editor', 'Advanced text editing...');
+    });
+
+    document.getElementById('terminal')?.addEventListener('click', () => {
+        createWindow('Terminal', `
+            <div class="terminal-container" style="background:black;color:lime;font-family:monospace;height:100%;width:100%;padding:0;display:flex;flex-direction:column;">
+                <div class="terminal-output" style="flex:1;overflow:auto;padding:10px;"></div>
+                <form class="terminal-form" style="display:flex;" onsubmit="return false;">
+                    <span style="color:lime;">$</span>
+                    <input class="terminal-input" autocomplete="off" style="flex:1;background:black;color:lime;border:none;outline:none;font-family:monospace;font-size:1em;padding:5px;" />
+                </form>
+            </div>
+        `);
+
+        // Wait for the window to be added to the DOM
+        setTimeout(() => {
+            const osInterface = document.querySelector('div[os-interface]');
+            const lastWindow = osInterface.querySelector('div[window]:last-child');
+            if (!lastWindow) return;
+            const terminalOutput = lastWindow.querySelector('.terminal-output');
+            const terminalForm = lastWindow.querySelector('.terminal-form');
+            const terminalInput = lastWindow.querySelector('.terminal-input');
+
+            if (!terminalForm) {
+                console.error('Terminal form not found!');
+                return;
+            }
+
+            // Prevent default form submission (backup)
+            terminalForm.onsubmit = (e) => e.preventDefault();
+
+            // Focus input on open
+            terminalInput.focus();
+
+            // Simple shell commands
+            const commands = {
+                help: () => 'Available commands: help, echo, date, clear, about, whoami, changename',
+                echo: (args) => args.join(' '),
+                date: () => new Date().toString(),
+                clear: () => { terminalOutput.innerHTML = ''; return ''; },
+                about: () => 'Square OS Terminal v1.0',
+                whoami: () => `${localStorage.getItem('user')}`,
+                changename: (user) => {
+                    localStorage.setItem('user', user);
+                    document.querySelector('#use').innerHTML = user; 
+                    return `Username changed to ${user}`;
+                }
+            };
+            
+            // Extracted command runner for reuse
+            function runTerminalCommand() {
+                const input = terminalInput.value.trim();
+                if (!input) return;
+                terminalOutput.innerHTML += `<div><span style="color:lime;">$</span> ${escapeHTML(input)}</div>`;
+                const [cmd, ...args] = input.split(' ');
+                let result = '';
+                if (commands[cmd]) {
+                    result = commands[cmd](args);
+                } else {
+                    result = `Command not found: ${cmd}`;
+                }
+                if (result) {
+                    terminalOutput.innerHTML += `<div>${escapeHTML(result)}</div>`;
+                }
+                terminalInput.value = '';
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+
+            // Listen for form submit
+            terminalForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                runTerminalCommand();
+            });
+
+            // Listen for Enter key on input
+            terminalInput.addEventListener('keydown', (e) => {
+                if (e.key === "Enter") {
+                    e.preventDefault();
+                    runTerminalCommand();
+                }
+            });
+        }, 0);
+    });
+
+    document.getElementById('paint')?.addEventListener('click', () => {
+        createWindow('Paint', `
+            <canvas id="paint-canvas" width="380" height="220" style="border:1px solid #000; background:white; cursor:crosshair;"></canvas>
+            <div>
+                <button id="clear-canvas">Clear</button>
+            </div>
+        `);
+        setTimeout(() => {
+            const osInterface = document.querySelector('div[os-interface]');
+            const lastWindow = osInterface.querySelector('div[window]:last-child');
+            if (!lastWindow) return;
+            const canvas = lastWindow.querySelector('#paint-canvas');
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+            canvas.addEventListener('mousedown', () => drawing = true);
+            canvas.addEventListener('mouseup', () => drawing = false);
+            canvas.addEventListener('mouseleave', () => drawing = false);
+            canvas.addEventListener('mousemove', (e) => {
+                if (!drawing) return;
+                const rect = canvas.getBoundingClientRect();
+                ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+            });
+            lastWindow.querySelector('#clear-canvas').addEventListener('click', () => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            });
+        }, 0);
+    });
+
+    document.getElementById('explorer')?.addEventListener('click', () => {
+        createWindow('File Explorer', `
+            <div style="padding:10px;">
+                <p>This is a mock file explorer. (No real file system access in browser)</p>
+                <ul>
+                    <li>Documents</li>
+                    <li>Pictures</li>
+                    <li>Music</li>
+                    <li>Videos</li>
+                </ul>
+            </div>
+        `);
+    });
+        // Start menu button functionality
+        document.getElementById('calc2')?.addEventListener('click', () => {
+            createWindow('Calculator', 'Calculator content here...');
+        });
+    
+        document.getElementById('notepad2')?.addEventListener('click', () => {
+            createWindow('Notepad', '<button save-file>Save</button><input filename placeholder="Filename"></input><textarea placeholder="Start typing here..." style="width: 98%; height: 98%;"></textarea>');
+            // Wait for the window to be added to the DOM
+            setTimeout(() => {
+                const osInterface = document.querySelector('div[os-interface]');
+                const lastWindow = osInterface.querySelector('div[window]:last-child');
+                if (!lastWindow) return;
+                const saveBtn = lastWindow.querySelector('button[save-file]');
+                const filenameInput = lastWindow.querySelector('input[filename]');
+                const textarea = lastWindow.querySelector('textarea');
+                if (saveBtn && filenameInput && textarea) {
+                    saveBtn.addEventListener('click', () => {
+                        const filename = filenameInput.value.trim() || 'untitled.txt';
+                        const content = textarea.value;
+                        const blob = new Blob([content], { type: 'text/plain' });
+                        const a = document.createElement('a');
+                        a.href = URL.createObjectURL(blob);
+                        a.download = filename;
+                        document.body.appendChild(a);
+                        a.click();
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(a.href);
+                        }, 100);
+                    });
+                }
+            }, 0);
+        });
+    
+        document.getElementById('text-editor2')?.addEventListener('click', () => {
+            createWindow('Text Editor', 'Advanced text editing...');
+        });
+    
+        document.getElementById('terminal2')?.addEventListener('click', () => {
+            createWindow('Terminal', `
+                <div class="terminal-container" style="background:black;color:lime;font-family:monospace;height:100%;width:100%;padding:0;display:flex;flex-direction:column;">
+                    <div class="terminal-output" style="flex:1;overflow:auto;padding:10px;"></div>
+                    <form class="terminal-form" style="display:flex;" onsubmit="return false;">
+                        <span style="color:lime;">$</span>
+                        <input class="terminal-input" autocomplete="off" style="flex:1;background:black;color:lime;border:none;outline:none;font-family:monospace;font-size:1em;padding:5px;" />
+                    </form>
+                </div>
+            `);
+    
+            // Wait for the window to be added to the DOM
+            setTimeout(() => {
+                const osInterface = document.querySelector('div[os-interface]');
+                const lastWindow = osInterface.querySelector('div[window]:last-child');
+                if (!lastWindow) return;
+                const terminalOutput = lastWindow.querySelector('.terminal-output');
+                const terminalForm = lastWindow.querySelector('.terminal-form');
+                const terminalInput = lastWindow.querySelector('.terminal-input');
+    
+                if (!terminalForm) {
+                    console.error('Terminal form not found!');
+                    return;
+                }
+    
+                // Prevent default form submission (backup)
+                terminalForm.onsubmit = (e) => e.preventDefault();
+    
+                // Focus input on open
+                terminalInput.focus();
+    
+                // Simple shell commands
+                const commands = {
+                    help: () => 'Available commands: help, echo, date, clear, about, whoami, changename',
+                    echo: (args) => args.join(' '),
+                    date: () => new Date().toString(),
+                    clear: () => { terminalOutput.innerHTML = ''; return ''; },
+                    about: () => 'Square OS Terminal v1.0',
+                    whoami: () => `${localStorage.getItem('user')}`,
+                    changename: (user) => {
+                        localStorage.setItem('user', user);
+                        document.querySelector('#use').innerHTML = user; 
+                        return `Username changed to ${user}`;
+                          
+                    }
+                };
+    
+                // Extracted command runner for reuse
+                function runTerminalCommand() {
+                    const input = terminalInput.value.trim();
+                    if (!input) return;
+                    terminalOutput.innerHTML += `<div><span style="color:lime;">$</span> ${escapeHTML(input)}</div>`;
+                    const [cmd, ...args] = input.split(' ');
+                    let result = '';
+                    if (commands[cmd]) {
+                        result = commands[cmd](args);
+                    } else {
+                        result = `Command not found: ${cmd}`;
+                    }
+                    if (result) {
+                        terminalOutput.innerHTML += `<div>${escapeHTML(result)}</div>`;
+                    }
+                    terminalInput.value = '';
+                    terminalOutput.scrollTop = terminalOutput.scrollHeight;
+                }
+    
+                // Listen for form submit
+                terminalForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    runTerminalCommand();
+                });
+    
+                // Listen for Enter key on input
+                terminalInput.addEventListener('keydown', (e) => {
+                    if (e.key === "Enter") {
+                        e.preventDefault();
+                        runTerminalCommand();
+                    }
+                });
+            }, 0);
+        });
+    
+        document.getElementById('paint2')?.addEventListener('click', () => {
+            createWindow('Paint', `
+                <canvas id="paint-canvas" width="380" height="220" style="border:1px solid #000; background:white; cursor:crosshair;"></canvas>
+                <div>
+                    <button id="clear-canvas">Clear</button>
+                </div>
+            `);
+            setTimeout(() => {
+                const osInterface = document.querySelector('div[os-interface]');
+                const lastWindow = osInterface.querySelector('div[window]:last-child');
+                if (!lastWindow) return;
+                const canvas = lastWindow.querySelector('#paint-canvas');
+                const ctx = canvas.getContext('2d');
+                let drawing = false;
+                canvas.addEventListener('mousedown', () => drawing = true);
+                canvas.addEventListener('mouseup', () => drawing = false);
+                canvas.addEventListener('mouseleave', () => drawing = false);
+                canvas.addEventListener('mousemove', (e) => {
+                    if (!drawing) return;
+                    const rect = canvas.getBoundingClientRect();
+                    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+                });
+                lastWindow.querySelector('#clear-canvas').addEventListener('click', () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                });
+            }, 0);
+        });
+    
+        document.getElementById('explorer2')?.addEventListener('click', () => {
+            createWindow('File Explorer', `
+                <div style="padding:10px;">
+                    <p>This is a mock file explorer. (No real file system access in browser)</p>
+                    <ul>
+                        <li>Documents</li>
+                        <li>Pictures</li>
+                        <li>Music</li>
+                        <li>Videos</li>
+                    </ul>
+                </div>
+            `);
+        });
+});
+
+function initializeWindows() {
+    const windows = document.querySelectorAll('div[window]');
+    windows.forEach(window => {
+        makeWindowDraggable(window);
+        makeWindowResizable(window);
+    });
+}
+
+function makeWindowDraggable(window) {
+    const titlebar = window.querySelector('.titlebar');
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
+
+    // Remove any existing event listeners to prevent duplicates
+    titlebar.removeEventListener('pointerdown', titlebar._dragHandler);
+    
+    // Create new drag handler
+    titlebar._dragHandler = (e) => {
+        if (e.target.closest('.buttons')) return; // Don't drag when clicking buttons
+        
+        isDragging = true;
+        offsetX = e.clientX - window.offsetLeft;
+        offsetY = e.clientY - window.offsetTop;
+        window.style.position = 'fixed';
+        bringToFront(window);
+        document.body.style.userSelect = 'none';
+    };
+
+    titlebar.addEventListener('pointerdown', titlebar._dragHandler);
+
+    // Global mouse move and up handlers
+    const handleMouseMove = (e) => {
+        if (isDragging) {
+            window.style.left = (e.clientX - offsetX) + 'px';
+            window.style.top = (e.clientY - offsetY) + 'px';
+        }
+    };
+
+    const handleMouseUp = () => {
+        isDragging = false;
+        document.body.style.userSelect = '';
+    };
+
+    // Remove existing global handlers if they exist
+    document.removeEventListener('pointermove', handleMouseMove);
+    document.removeEventListener('pointerup', handleMouseUp);
+    
+    // Add global handlers
+    document.addEventListener('pointermove', handleMouseMove);
+    document.addEventListener('pointerup', handleMouseUp);
+}
+
+function makeWindowResizable(window) {
+    // Window is already resizable via CSS resize: both
+    // This function can be used for custom resize handles if needed
+}
+
+function bringToFront(window) {
+    const windows = document.querySelectorAll('div[window]');
+    let maxZ = 100;
+    
+    windows.forEach(w => {
+        const z = parseInt(w.style.zIndex) || 100;
+        maxZ = Math.max(maxZ, z);
+    });
+    
+    window.style.zIndex = maxZ + 1;
+}
+
+function createWindow(title, content) {
+    // Calculate position for new window to avoid overlapping
+    const existingWindows = document.querySelectorAll('div[window]');
+    const offset = existingWindows.length * 30; // Stagger windows by 30px
+    const left = 50 + offset;
+    const top = 50 + offset;
+    
+    const windowHTML = `
+        <div window style="padding: 10px; position: fixed; top: ${top}px; left: ${left}px; width: 400px; height: 300px;">
+            <div class="titlebar" resizable="true">
+                <div class="title">
+                    <span>${title}</span>
+                    <div class="buttons">
+                        <button close-window onclick="this.closest('[window]').remove()">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button minimize-window onclick="
+                            const minWin = this.closest('[window]');
+                            const minContent = minWin.querySelector('[window-content]');
+                            const isMinimized = minWin.classList.contains('minimized');
+                            
+                            console.log('Minimize button clicked');
+                            console.log('Current minimized state:', isMinimized);
+                            console.log('Current display:', minContent.style.display);
+                            console.log('Current height:', minWin.style.height);
+                            
+                            if (isMinimized) {
+                                // Restore window
+                                console.log('Restoring window...');
+                                minContent.style.display = 'block';
+                                if (minWin.dataset.prevHeight) {
+                                    minWin.style.height = minWin.dataset.prevHeight;
+                                    console.log('Restored height to:', minWin.dataset.prevHeight);
+                                } else {
+                                    minWin.style.height = '300px'; // Default height if none saved
+                                }
+                                minWin.classList.remove('minimized');
+                            } else {
+                                // Minimize window
+                                console.log('Minimizing window...');
+                                minContent.style.display = 'none';
+                                minWin.dataset.prevHeight = minWin.style.height || '300px';
+                                minWin.style.height = '40px';
+                                minWin.classList.add('minimized');
+                                console.log('Saved height:', minWin.dataset.prevHeight);
+                            }
+                            
+                            console.log('New minimized state:', minWin.classList.contains('minimized'));
+                        ">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <button maximize-window onclick="
+                            const maxWin = this.closest('[window]');
+                            const maxContent = maxWin.querySelector('[window-content]');
+                            const isMaximized = maxWin.classList.contains('maximized');
+                            
+                            if (isMaximized) {
+                                // Restore window
+                                maxWin.style.width = maxWin.dataset.prevWidth || '400px';
+                                maxWin.style.height = maxWin.dataset.prevHeight || '300px';
+                                maxWin.style.left = maxWin.dataset.prevLeft || '50px';
+                                maxWin.style.top = maxWin.dataset.prevTop || '50px';
+                                maxWin.classList.remove('maximized');
+                                maxContent.style.resize = 'both';
+                            } else {
+                                // Maximize window
+                                maxWin.dataset.prevWidth = maxWin.style.width;
+                                maxWin.dataset.prevHeight = maxWin.style.height;
+                                maxWin.dataset.prevLeft = maxWin.style.left;
+                                maxWin.dataset.prevTop = maxWin.style.top;
+                                maxWin.style.width = '100vw';
+                                maxWin.style.height = 'calc(100vh - 35px)';
+                                maxWin.style.left = '0px';
+                                maxWin.style.top = '35px';
+                                maxWin.classList.add('maximized');
+                                maxContent.style.resize = 'none';
+                            }
+                        ">
+                            <i class="fa-solid fa-square"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div window-content>
+                ${content}
+            </div>
+        </div>
+    `;
+    
+    const osInterface = document.querySelector('div[os-interface]');
+    osInterface.insertAdjacentHTML('beforeend', windowHTML);
+    
+    // Initialize the new window
+    const newWindow = osInterface.lastElementChild;
+    makeWindowDraggable(newWindow);
+    bringToFront(newWindow);
+    // Close start menu
+    document.querySelector('div[startmenu]').classList.add('hidden');
+}
+
+function escapeHTML(str) {
+    return str.replace(/[&<>"']/g, function(m) {
+        return ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[m];
+    });
+}
+  </script>
+</body>
+</html>
+
